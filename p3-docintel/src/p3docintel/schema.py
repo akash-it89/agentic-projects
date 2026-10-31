@@ -72,3 +72,5 @@ class ChatAnswer(BaseModel):
     found: bool
     line_ids: list[str] = Field(default_factory=list)
     boxes: list[dict] = Field(default_factory=list)  # [{"page": 1, "bbox": [...]}] for highlighting
+    # Why there's no answer: not_in_document | no_supporting_line | unreadable_reply (helps debugging)
+    reason: str = ""

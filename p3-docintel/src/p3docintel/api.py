@@ -3,6 +3,7 @@
     uv run python -m p3docintel serve        # then open http://localhost:8000
 """
 
+import logging
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
@@ -17,6 +18,7 @@ from .ingest import supported
 from .llm import get_llm
 from .schema import ChatAnswer, DocResult
 
+log = logging.getLogger(__name__)
 WEB_DIR = Path(__file__).resolve().parent / "web"
 MAX_UPLOAD_MB = 25
 
@@ -83,4 +85,12 @@ def chat(doc_id: str, req: ChatRequest) -> ChatAnswer:
     doc = _load(doc_id)
     if doc.status != "done":
         raise HTTPException(409, "The document is still being processed.")
-    return answer(req.question, doc.lines, get_llm())
+    try:
+        return answer(req.question, doc.lines, get_llm())
+    except Exception as e:  # model server down or model not pulled: say so instead of a bare 500
+        log.exception("Chat failed for %s", doc_id)
+        s = get_settings()
+        model = s.ollama_model if s.llm_provider == "ollama" else s.bedrock_model_id
+        hint = (f"Is Ollama running, and is '{model}' pulled? (ollama pull {model})"
+                if s.llm_provider == "ollama" else f"Check your AWS credentials and access to '{model}'.")
+        raise HTTPException(503, f"The language model didn't respond ({type(e).__name__}). {hint}") from None
