@@ -72,7 +72,7 @@ cd C:\work\agentic-projects\p3-docintel
 Copy-Item .env.example .env
 notepad .env                                  # set OLLAMA_MODEL=qwen2.5:3b if you only pulled the 3B model
 uv sync --group ocr
-uv run pytest                                 # expect: 17 passed
+uv run pytest                                 # expect: 19 passed
 uv run python -m p3docintel samples
 uv run python -m p3docintel serve
 ```
