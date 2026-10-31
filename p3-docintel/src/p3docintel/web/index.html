@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document Intelligence</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Document intelligence</h1>
+    <form id="upload" class="upload">
+      <label class="file">
+        <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.webp" required>
+        <span id="file-label">Choose a PDF or image</span>
+      </label>
+      <label>Language
+        <select id="language">
+          <option value="auto">Detect (PDFs with text)</option>
+          <option value="en">English</option>
+          <option value="ta">Tamil</option>
+          <option value="ar">Arabic</option>
+        </select>
+      </label>
+      <button type="submit">Upload</button>
+    </form>
+    <label class="docs">Recent
+      <select id="docs"><option value="">–</option></select>
+    </label>
+  </header>
+
+  <main class="layout">
+    <aside class="side">
+      <div id="status" class="status" role="status">Upload a document to start.</div>
+
+      <section id="overview" class="panel" hidden>
+        <div class="meta">
+          <span id="doc-type" class="pill"></span>
+          <span id="doc-lang" class="pill quiet"></span>
+          <span id="doc-engine" class="pill quiet"></span>
+        </div>
+        <h2>Summary</h2>
+        <p id="summary" class="summary" dir="auto"></p>
+      </section>
+
+      <section id="fields-panel" class="panel" hidden>
+        <h2>Extracted fields <span id="field-count" class="count"></span></h2>
+        <p class="hint">Click a field to see where it came from.</p>
+        <ol id="fields" class="fields"></ol>
+      </section>
+
+      <section id="chat-panel" class="panel" hidden>
+        <h2>Ask about this document</h2>
+        <div id="chat-log" class="chat-log" aria-live="polite"></div>
+        <form id="chat-form" class="chat-form">
+          <label for="question" class="visually-hidden">Question</label>
+          <input id="question" dir="auto" placeholder="e.g. When is the payment due?" autocomplete="off">
+          <button type="submit">Ask</button>
+        </form>
+      </section>
+    </aside>
+
+    <section id="viewer" class="viewer" aria-label="Document pages"></section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

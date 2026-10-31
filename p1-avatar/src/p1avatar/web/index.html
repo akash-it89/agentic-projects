@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Airport Kiosk</title>
+  <link rel="stylesheet" href="/static/kiosk.css">
+</head>
+<body>
+  <main class="kiosk">
+    <header>
+      <h1>Airport information</h1>
+      <p>Ask in English, हिन्दी or Español</p>
+    </header>
+
+    <section class="stage">
+      <video id="avatar" playsinline poster="/static/avatar-placeholder.svg"></video>
+      <audio id="voice-only"></audio>
+      <div id="status" class="status" role="status">Hold the button and ask a question</div>
+    </section>
+
+    <section class="controls">
+      <button id="talk" class="talk" type="button" aria-describedby="status">Hold to talk</button>
+      <label>Voice
+        <select id="voice"><option value="">Automatic</option></select>
+      </label>
+    </section>
+
+    <form id="type-form" class="type-form">
+      <label for="typed" class="visually-hidden">Type a question</label>
+      <input id="typed" placeholder="…or type a question (text only, no voice)" autocomplete="off">
+      <button type="submit">Ask</button>
+    </form>
+
+    <section class="log" aria-live="polite">
+      <div><span class="label">You</span> <span id="you" dir="auto">–</span></div>
+      <div><span class="label">Kiosk</span> <span id="kiosk" dir="auto">–</span></div>
+      <div class="meta"><span id="lang-badge" class="badge">lang: –</span> <span id="timings"></span></div>
+    </section>
+  </main>
+  <script src="/static/kiosk.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{"id": "en-01", "lang": "en", "question": "Where is gate C22?", "answerable": true, "expected_keywords": ["Terminal 2", "Concourse C"]}
+{"id": "en-02", "lang": "en", "question": "How do I get from Terminal 1 to Terminal 2?", "answerable": true, "expected_keywords": ["shuttle"]}
+{"id": "en-03", "lang": "en", "question": "What is the Wi-Fi network called?", "answerable": true, "expected_keywords": ["SIA-Free-WiFi"]}
+{"id": "en-04", "lang": "en", "question": "How much does the Skyline Lounge cost?", "answerable": true, "expected_keywords": ["35"]}
+{"id": "en-05", "lang": "en", "question": "Is there a pharmacy in Terminal 1?", "answerable": false}
+{"id": "en-06", "lang": "en", "question": "What time does my flight to Dubai leave?", "answerable": false}
+{"id": "hi-01", "lang": "hi", "question": "गेट C22 कहाँ है?", "answerable": true, "expected_keywords": ["C"]}
+{"id": "hi-02", "lang": "hi", "question": "खोया हुआ सामान कहाँ रिपोर्ट करें?", "answerable": true, "expected_keywords": ["6"]}
+{"id": "hi-03", "lang": "hi", "question": "हवाई अड्डे पर पार्किंग का शुल्क कितना है?", "answerable": false}
+{"id": "es-01", "lang": "es", "question": "¿Dónde está la puerta C22?", "answerable": true, "expected_keywords": ["Terminal 2"]}
+{"id": "es-02", "lang": "es", "question": "¿A qué hora abre la sala VIP?", "answerable": true, "expected_keywords": ["05:00"]}
+{"id": "es-03", "lang": "es", "question": "¿Hay una farmacia en la Terminal 2?", "answerable": false}

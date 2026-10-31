@@ -1,0 +1,21 @@
+:root { --bg: #0f1a22; --panel: #182631; --ink: #e8eef2; --muted: #93a6b3; --accent: #2bb3c0; --rec: #e0533d; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Segoe UI", system-ui, sans-serif; }
+.kiosk { max-width: 720px; margin: 0 auto; padding: 24px 16px; display: grid; gap: 16px; }
+header h1 { margin: 0; font-size: 1.8rem; }
+header p { margin: 4px 0 0; color: var(--muted); }
+.stage { position: relative; background: var(--panel); border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; max-height: 60vh; }
+.stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.status { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 14px; background: rgb(0 0 0 / 0.55); }
+.controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.talk { flex: 1 1 240px; padding: 18px; font-size: 1.2rem; font-weight: 600; border: 0; border-radius: 999px; background: var(--accent); color: #062126; cursor: pointer; user-select: none; touch-action: none; }
+.talk.recording { background: var(--rec); color: #fff; }
+select, input, .type-form button { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid #2c3e4b; background: var(--panel); color: var(--ink); }
+.type-form { display: flex; gap: 8px; }
+.type-form input { flex: 1; min-width: 0; }
+.log { background: var(--panel); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; }
+.label { display: inline-block; min-width: 52px; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.meta { color: var(--muted); font-size: 0.85rem; }
+.badge { border: 1px solid #2c3e4b; border-radius: 999px; padding: 1px 8px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

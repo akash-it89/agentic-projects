@@ -1,0 +1,43 @@
+# Start the GPU set:  docker compose --profile gpu up -d
+# Start the CPU set:  docker compose --profile cpu up -d
+# Qdrant has no profile, so it always starts. Pin image tags once everything works.
+
+x-gpu: &gpu
+  deploy:
+    resources:
+      reservations:
+        devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+    volumes: ["./.qdrant:/qdrant/storage"]
+
+  kokoro-gpu:
+    profiles: [gpu]
+    image: ghcr.io/remsky/kokoro-fastapi-gpu:latest
+    ports: ["8880:8880"]
+    <<: *gpu
+
+  kokoro-cpu:
+    profiles: [cpu]
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    ports: ["8880:8880"]
+
+  # Only needed when ASR_BACKEND=speaches (the LiveKit cascaded agent uses it).
+  speaches-gpu:
+    profiles: [gpu]
+    image: ghcr.io/speaches-ai/speaches:latest-cuda
+    ports: ["8000:8000"]
+    volumes: ["hf-cache:/home/ubuntu/.cache/huggingface/hub"]
+    <<: *gpu
+
+  speaches-cpu:
+    profiles: [cpu]
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
+    ports: ["8000:8000"]
+    volumes: ["hf-cache:/home/ubuntu/.cache/huggingface/hub"]
+
+volumes:
+  hf-cache:

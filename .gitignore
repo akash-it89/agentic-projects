@@ -1,0 +1,9 @@
+# Applies to every project (each also has its own .gitignore)
+.venv/
+.env
+runs/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store

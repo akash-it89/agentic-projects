@@ -1,0 +1,55 @@
+:root {
+  --bg: #f3f5f7; --panel: #ffffff; --ink: #17222b; --muted: #5d6c77; --line: #d9e0e5;
+  --accent: #1f5fa8; --hl: rgba(255, 196, 0, 0.28); --hl-edge: #d99a00; --warn: #a65e00;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #10171d; --panel: #18222a; --ink: #e2e9ee; --muted: #93a3ae; --line: #2a3843;
+          --accent: #79a8e6; --hl: rgba(255, 196, 0, 0.25); --hl-edge: #f0b400; --warn: #f0a35a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 1.15rem; margin: 0 auto 0 0; }
+.upload { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.file span { display: inline-block; padding: 6px 12px; border: 1px dashed var(--line); border-radius: 6px; cursor: pointer; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.file input:focus-visible + span { outline: 2px solid var(--accent); }
+select, input, button { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+button { background: var(--accent); color: #fff; border-color: var(--accent); cursor: pointer; }
+button:disabled { opacity: 0.6; cursor: default; }
+label { color: var(--muted); font-size: 0.85rem; display: inline-flex; gap: 6px; align-items: center; }
+.layout { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 16px; padding: 16px 20px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+.side { display: grid; gap: 12px; position: sticky; top: 12px; max-height: calc(100vh - 100px); overflow-y: auto; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+.panel h2 { font-size: 0.95rem; margin: 0 0 6px; }
+.status { color: var(--muted); padding: 4px 2px; }
+.status.error { color: var(--warn); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 1px 10px; font-size: 0.8rem; }
+.pill.quiet { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.summary { margin: 0; white-space: pre-line; }
+.hint { margin: 0 0 8px; color: var(--muted); font-size: 0.85rem; }
+.count { color: var(--muted); font-weight: normal; }
+.fields { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fields .page-head { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 8px; }
+.field { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; width: 100%; text-align: left; background: transparent; color: var(--ink); border: 1px solid transparent; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+.field:hover, .field.active { border-color: var(--hl-edge); background: var(--hl); }
+.field .name { font-size: 0.78rem; color: var(--muted); }
+.field .type { font-size: 0.72rem; color: var(--muted); justify-self: end; }
+.field .value { grid-column: 1 / -1; overflow-wrap: anywhere; }
+.field.unsure .name::after { content: " · check this"; color: var(--warn); }
+.chat-log { display: grid; gap: 8px; margin-bottom: 8px; }
+.msg { padding: 6px 10px; border-radius: 8px; overflow-wrap: anywhere; }
+.msg.q { background: var(--bg); justify-self: end; }
+.msg.a { border: 1px solid var(--line); }
+.msg .cite { display: inline-block; margin-top: 4px; font-size: 0.8rem; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+.chat-form { display: flex; gap: 6px; }
+.chat-form input { flex: 1; min-width: 0; }
+.viewer { display: grid; gap: 16px; min-width: 0; }
+.page { position: relative; background: #fff; box-shadow: 0 1px 4px rgb(0 0 0 / 0.15); }
+.page img { display: block; width: 100%; height: auto; }
+.page .label { position: absolute; top: 6px; left: 8px; font-size: 0.75rem; color: #556; background: rgb(255 255 255 / 0.8); padding: 0 6px; border-radius: 4px; }
+.box { position: absolute; border: 2px solid var(--hl-edge); background: var(--hl); border-radius: 2px; pointer-events: none; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

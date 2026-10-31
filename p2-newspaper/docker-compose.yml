@@ -1,0 +1,6 @@
+# Label Studio, for hand-labelling article boxes on real pages:  docker compose up -d  ->  http://localhost:8080
+services:
+  label-studio:
+    image: heartexlabs/label-studio:latest   # pin a tag once it works
+    ports: ["8080:8080"]
+    volumes: ["./labels:/label-studio/data"]
