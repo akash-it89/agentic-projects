@@ -26,7 +26,11 @@ class PaddleEngine:
     name = "paddleocr"
 
     def __init__(self, s: Settings | None = None):
-        from paddleocr import PaddleOCR
+        try:
+            from paddleocr import PaddleOCR
+        except ImportError:
+            raise RuntimeError("PaddleOCR isn't installed. Run `uv sync --group ocr`, or use --gold-lines "
+                               "to test the layout logic without OCR.") from None
 
         s = s or get_settings()
         # PaddleOCR 3.x argument names (tested with 3.4). Once a detection model name is passed, PaddleOCR

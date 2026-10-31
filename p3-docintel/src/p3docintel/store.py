@@ -5,6 +5,7 @@ nothing else needs to change.
 """
 
 import re
+import time
 import uuid
 from pathlib import Path
 
@@ -47,7 +48,16 @@ def save(result: DocResult) -> None:
     path = doc_dir(result.doc_id) / "result.json"
     tmp = path.with_suffix(".tmp")
     tmp.write_text(result.model_dump_json(indent=1), encoding="utf-8")
-    tmp.replace(path)  # atomic, so the UI never reads a half-written file while polling
+    # Atomic, so the UI never reads a half-written file while polling. Windows refuses to replace a file
+    # another thread has open for reading at that instant, so retry briefly instead of failing the document.
+    for attempt in range(20):
+        try:
+            tmp.replace(path)
+            return
+        except PermissionError:
+            if attempt == 19:
+                raise
+            time.sleep(0.05)
 
 
 def load(doc_id: str) -> DocResult:

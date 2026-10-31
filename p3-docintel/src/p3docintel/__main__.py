@@ -9,6 +9,7 @@
 import argparse
 import json
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -16,6 +17,10 @@ from .config import PROJECT_ROOT, get_settings
 
 
 def main() -> None:
+    # The Windows console often isn't UTF-8; printing Tamil or Arabic would otherwise crash the command.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser(prog="p3docintel", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)

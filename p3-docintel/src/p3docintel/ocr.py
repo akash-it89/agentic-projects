@@ -36,7 +36,11 @@ class PaddleEngine:
     name = "paddle"
 
     def __init__(self, s: Settings, lang: str):
-        from paddleocr import PaddleOCR
+        try:
+            from paddleocr import PaddleOCR
+        except ImportError:
+            raise RuntimeError("Scans and photos need OCR, which isn't installed. "
+                               "Run `uv sync --group ocr`, then restart the app.") from None
 
         # PaddleOCR 3.x argument names (tested with 3.4). Check its docs if a later release renames them.
         self.ocr = PaddleOCR(device=s.ocr_device,

@@ -12,6 +12,8 @@ Each project has its own README with setup, run steps, evaluation and design not
 
 ## Quick start (Windows PowerShell)
 
+For the full Windows checklist (hardware, installs, every project, troubleshooting), see [WINDOWS.md](WINDOWS.md).
+
 ```powershell
 winget install -e --id Python.Python.3.12
 winget install -e --id astral-sh.uv
