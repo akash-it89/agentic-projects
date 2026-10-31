@@ -7,6 +7,8 @@ import logging
 import time
 from pathlib import Path
 
+from PIL import Image
+
 from . import store
 from .classify import classify, summarise
 from .config import Settings, get_settings
@@ -68,6 +70,8 @@ def process(doc_id: str, *, llm: LLM | None = None, classify_llm: LLM | None = N
             else:
                 engine = engine or ocr or get_engine(s.ocr_engine, lang)
                 page_lines = engine.read(r.png, r.page.number)
+                with Image.open(r.png) as im:  # OCR may have saved the page upright, swapping width and height
+                    r.page.width, r.page.height = im.size
                 if reader:
                     result.stats["vlm_lines"] = result.stats.get("vlm_lines", 0) + correct_lines(
                         page_lines, r.png, lang, reader, s.keep_score)

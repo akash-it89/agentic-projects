@@ -51,9 +51,15 @@ class PaddleEngine:
                              text_det_limit_type="max", text_det_limit_side_len=4000)
 
     def read(self, png: Path, page_no: int) -> list[Line]:
+        res = self.ocr.predict(str(png))[0]
+        # The orientation step turns sideways and upside-down photos upright before reading them, and the boxes
+        # refer to that upright image. Save it as the page, so the viewer shows the same image the boxes are on.
+        pre = res.get("doc_preprocessor_res") or {}
+        if pre.get("angle") and pre.get("output_img") is not None:
+            Image.fromarray(pre["output_img"][:, :, ::-1]).save(png)  # BGR (OpenCV order) -> RGB
+            log.info("Page %d was rotated %s degrees; saved upright", page_no, pre["angle"])
         with Image.open(png) as img:
             w, h = img.size
-        res = self.ocr.predict(str(png))[0]
         out = []
         for box, text, score in zip(res["rec_boxes"], res["rec_texts"], res["rec_scores"], strict=True):
             if text.strip():
