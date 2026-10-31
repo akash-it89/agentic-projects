@@ -1,3 +1,4 @@
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -20,6 +21,9 @@ class Settings(BaseSettings):
     # PaddleOCR detection. The mobile model is several times faster on CPU; compare accuracy with
     # PP-OCRv5_server_det on your own pages before choosing.
     det_model: str = "PP-OCRv5_mobile_det"
+    # PaddlePaddle's oneDNN CPU acceleration. Unset = off on Windows (a known PaddlePaddle 3.x bug raises
+    # NotImplementedError there), on elsewhere. Set OCR_MKLDNN=true/false to force it.
+    ocr_mkldnn: bool | None = None
     det_limit_side_len: int = 4000
     det_unclip_ratio: float = 1.5
     det_box_thresh: float = 0.6
@@ -40,6 +44,9 @@ class Settings(BaseSettings):
     correction: Literal["none", "vlm"] = "none"
     vlm_model: str = "qwen2.5vl:7b"
     keep_score: float = 0.9
+
+    def resolved_ocr_mkldnn(self) -> bool:
+        return self.ocr_mkldnn if self.ocr_mkldnn is not None else sys.platform != "win32"
 
     @property
     def rtl(self) -> bool:

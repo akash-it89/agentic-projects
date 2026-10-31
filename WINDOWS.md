@@ -72,7 +72,7 @@ cd C:\work\agentic-projects\p3-docintel
 Copy-Item .env.example .env
 notepad .env                                  # set OLLAMA_MODEL=qwen2.5:3b if you only pulled the 3B model
 uv sync --group ocr
-uv run pytest                                 # expect: 36 passed
+uv run pytest                                 # expect: 39 passed
 uv run python -m p3docintel samples
 uv run python -m p3docintel serve
 ```
@@ -135,6 +135,7 @@ Projects 1 and 2 both use port 8080: project 1's kiosk and project 2's optional 
 | "Connection refused" or "Connection error" from the LLM, or no fields extracted | Ollama isn't running: start it from the Start menu |
 | `uv sync --group ocr` fails on paddlepaddle | Install PaddlePaddle with the CPU command from https://www.paddlepaddle.org.cn/en/install/quick, then run `uv sync --group ocr` again |
 | "Scans and photos need OCR, which isn't installed" | `uv sync --group ocr`, then restart the app |
+| "Couldn't process … NotImplementedError" on images | A PaddlePaddle bug in its CPU acceleration (oneDNN). It's off on Windows by default since this fix: run `git pull` and restart. If it still appears, add `OCR_MKLDNN=false` to `.env` |
 | `docker compose` fails | Docker Desktop isn't running yet, or virtualization is off in the BIOS |
 | "Address already in use" | Something else uses the port: `netstat -ano \| findstr :8000`, or start on another port (`serve --port 8001`) |
 | Windows Firewall prompt | Allow on Private networks |

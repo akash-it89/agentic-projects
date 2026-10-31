@@ -34,7 +34,7 @@ Chat works the same way: citations must come from the retrieved excerpts, otherw
 cd capstone\p3-docintel
 Copy-Item .env.example .env
 uv sync                      # app + born-digital PDFs + tests
-uv run pytest                # 36 tests; no Ollama, OCR or AWS needed
+uv run pytest                # 39 tests; no Ollama, OCR or AWS needed
 uv sync --group ocr          # PaddleOCR, for scans and photos
 ollama pull qwen2.5:7b       # extraction, summary, chat
 ollama pull qwen2.5:3b       # classification (small and cheap)

@@ -43,15 +43,34 @@ class PaddleEngine:
                                "Run `uv sync --group ocr`, then restart the app.") from None
 
         # PaddleOCR 3.x argument names (tested with 3.4). Check its docs if a later release renames them.
-        self.ocr = PaddleOCR(device=s.ocr_device,
-                             text_detection_model_name=s.det_model,
-                             text_recognition_model_name=PADDLE_REC_MODEL.get(lang, PADDLE_REC_MODEL["en"]),
-                             use_doc_orientation_classify=True,  # phone photos are often rotated
-                             use_doc_unwarping=False, use_textline_orientation=False,
-                             text_det_limit_type="max", text_det_limit_side_len=4000)
+        self._make = lambda mkldnn: PaddleOCR(
+            device=s.ocr_device,
+            text_detection_model_name=s.det_model,
+            text_recognition_model_name=PADDLE_REC_MODEL.get(lang, PADDLE_REC_MODEL["en"]),
+            use_doc_orientation_classify=True,  # phone photos are often rotated
+            use_doc_unwarping=False, use_textline_orientation=False,
+            text_det_limit_type="max", text_det_limit_side_len=4000,
+            enable_mkldnn=mkldnn)
+        self.mkldnn = s.resolved_ocr_mkldnn()
+        self.ocr = self._make(self.mkldnn)
+
+    def _predict(self, png: Path):
+        try:
+            return self.ocr.predict(str(png))[0]
+        except NotImplementedError:
+            # Known PaddlePaddle 3.x bug: its oneDNN (MKL-DNN) CPU acceleration raises NotImplementedError
+            # ("ConvertPirAttribute2RuntimeAttribute not support ...") on some CPUs, often on Windows.
+            # Rebuild without it and retry once, so the document still processes, just a little slower.
+            if not self.mkldnn:
+                raise
+            log.warning("PaddleOCR's CPU acceleration (oneDNN) failed on this machine; retrying without it. "
+                        "Set OCR_MKLDNN=false in .env to skip this retry.")
+            self.mkldnn = False
+            self.ocr = self._make(False)
+            return self.ocr.predict(str(png))[0]
 
     def read(self, png: Path, page_no: int) -> list[Line]:
-        res = self.ocr.predict(str(png))[0]
+        res = self._predict(png)
         # The orientation step turns sideways and upside-down photos upright before reading them, and the boxes
         # refer to that upright image. Save it as the page, so the viewer shows the same image the boxes are on.
         pre = res.get("doc_preprocessor_res") or {}

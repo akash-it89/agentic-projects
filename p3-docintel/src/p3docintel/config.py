@@ -1,3 +1,4 @@
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -18,6 +19,9 @@ class Settings(BaseSettings):
     ocr_engine: Literal["paddle", "textract"] = "paddle"
     ocr_device: Literal["cpu", "gpu"] = "cpu"
     det_model: str = "PP-OCRv5_mobile_det"
+    # PaddlePaddle's oneDNN CPU acceleration. Unset = off on Windows (a known PaddlePaddle 3.x bug raises
+    # NotImplementedError there), on elsewhere. Set OCR_MKLDNN=true/false to force it.
+    ocr_mkldnn: bool | None = None
     render_dpi: int = 200
     min_text_layer_words: int = 5  # fewer words than this on a PDF page = treat it as a scan
 
@@ -40,6 +44,9 @@ class Settings(BaseSettings):
     embed_model: str = "bge-m3"
     chunk_lines: int = 5
     top_chunks: int = 6
+
+    def resolved_ocr_mkldnn(self) -> bool:
+        return self.ocr_mkldnn if self.ocr_mkldnn is not None else sys.platform != "win32"
 
     @property
     def docs_dir(self) -> Path:
