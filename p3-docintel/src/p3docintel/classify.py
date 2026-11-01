@@ -2,6 +2,7 @@
 
 import logging
 
+from .citations import UNTRUSTED_TEXT_RULE
 from .langdetect import NAMES
 from .llm import LLM, parse_json
 from .schema import Line
@@ -12,11 +13,14 @@ DOC_TYPES = ("driving_licence", "national_id", "passport", "utility_bill", "hous
              "invoice", "receipt", "bank_statement", "payslip", "pamphlet", "letter", "form", "certificate", "other")
 
 CLASSIFY_SYSTEM = f"""Classify the document into exactly one of these types: {", ".join(DOC_TYPES)}.
-Return JSON: {{"doc_type": "<one of the types>", "confidence": <0 to 1>, "reason": "<a few words>"}}"""
+Use "other" if it isn't any of them.
+Return JSON: {{"doc_type": "<one of the types>", "confidence": <0 to 1>, "reason": "<a few words>"}}
+{UNTRUSTED_TEXT_RULE}"""
 
 SUMMARY_SYSTEM = """Summarise the document for someone who hasn't read it: what it is, who it concerns, and the key \
 facts (dates, amounts, obligations). Use only information in the text.
-Return JSON: {"summary": "<3 to 5 sentences in English>"%s}"""
+Return JSON: {"summary": "<3 to 5 sentences in English>"%s}
+""" + UNTRUSTED_TEXT_RULE
 
 
 def document_text(lines: list[Line], max_lines: int) -> str:

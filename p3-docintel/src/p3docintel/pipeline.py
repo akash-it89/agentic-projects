@@ -87,7 +87,8 @@ def process(doc_id: str, *, llm: LLM | None = None, classify_llm: LLM | None = N
         llm = llm or get_llm()
         classify_llm = classify_llm or llm
         stage("extracting fields")
-        result.fields = extract_fields(lines, llm, lang, s.max_lines_per_call)
+        result.stats["extraction"] = {}
+        result.fields = extract_fields(lines, llm, lang, s.max_lines_per_call, result.stats["extraction"])
 
         stage("classifying")
         result.doc_type, result.doc_type_confidence = classify(lines, classify_llm)

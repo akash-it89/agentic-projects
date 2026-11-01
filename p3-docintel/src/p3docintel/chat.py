@@ -10,6 +10,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
+from .citations import UNTRUSTED_TEXT_RULE, parse_ids
 from .config import Settings, get_settings
 from .llm import LLM, parse_json
 from .schema import ChatAnswer, Line, union
@@ -24,29 +25,19 @@ Return JSON with exactly these keys: {"found": true or false, "answer": "<short 
 Example: for the excerpt line "[p1-L7] Due date: 25/10/2026" and the question "When is it due?", return
 {"found": true, "answer": "25/10/2026", "line_ids": ["p1-L7"]}
 If the excerpts don't contain the answer, return {"found": false, "answer": "", "line_ids": []}.
-Answer in the language of the question."""
+If the question assumes something the excerpts contradict, say what the excerpts actually state.
+Answer in the language of the question.
+""" + UNTRUSTED_TEXT_RULE
 
-_CITED_ID = re.compile(r"p\s*(\d+)\s*-\s*l\s*(\d+)", re.IGNORECASE)
-_SHORT_ID = re.compile(r"^\[?\s*l\s*(\d+)\s*\]?$", re.IGNORECASE)
 _ID_IN_TEXT = re.compile(r"\s*[\[(]\s*p\d+\s*-\s*l\d+(?:\s*,\s*p\d+\s*-\s*l\d+)*\s*[\])]", re.IGNORECASE)
 _ANSWER_KEYS = ("answer", "response", "result", "text")
 
 
 def _cited_ids(raw, answer_text: str, allowed: list[str]) -> list[str]:
-    """Line IDs however the model wrote them: "p1-L3", "[p1-L3]", "p1 - L3", "L3" (if unambiguous),
-    a single string instead of a list, or IDs written inside the answer itself. Only retrieved IDs count."""
-    items = raw if isinstance(raw, list) else [raw] if raw not in (None, "") else []
-    items = [*items, answer_text]
-    out: list[str] = []
-    for item in items:
-        text = str(item)
-        found = [f"p{p}-L{n}" for p, n in _CITED_ID.findall(text)]
-        short = _SHORT_ID.match(text.strip())
-        if short:  # "L3" without a page: accept only if exactly one retrieved line has that number
-            matches = [i for i in allowed if i.endswith(f"-L{short.group(1)}")]
-            found += matches if len(matches) == 1 else []
-        out += [i for i in found if i in allowed and i not in out]
-    return out
+    """Citations from the line_ids field, plus any IDs written inside the answer itself. Only retrieved IDs
+    count; see citations.parse_ids for the formats accepted."""
+    items = raw if isinstance(raw, list) else [] if raw in (None, "") else [raw]
+    return parse_ids([*items, answer_text], allowed)
 
 
 _STOP = {"the", "is", "are", "was", "a", "an", "of", "to", "on", "in", "and", "or", "for", "by", "it", "this",
@@ -105,9 +96,24 @@ def make_chunks(lines: list[Line], size: int = 5) -> list[Chunk]:
 _TOKEN = re.compile(r"\w+", re.UNICODE)
 
 
+_LATIN_WORD = re.compile(r"[a-z]+")
+
+
+def _stem(t: str) -> str:
+    """Crude English suffix stripping so "expire", "expires" and "expired" match. Not linguistically correct,
+    just consistent: questions and document go through the same function. Non-Latin words are left alone."""
+    if not _LATIN_WORD.fullmatch(t):
+        return t
+    for suffix in ("ing", "ed", "es", "s"):
+        if t.endswith(suffix) and len(t) - len(suffix) >= 3:
+            t = t[: -len(suffix)]
+            break
+    return t[:-1] if t.endswith("e") and len(t) > 3 else t
+
+
 def tokenize(text: str) -> list[str]:
     # \w covers Tamil and Arabic letters too; drop the [p1-L3] ID tokens so they don't match questions
-    return [t for t in _TOKEN.findall(text.casefold()) if not re.fullmatch(r"p\d+|l\d+", t)]
+    return [_stem(t) for t in _TOKEN.findall(text.casefold()) if not re.fullmatch(r"p\d+|l\d+", t)]
 
 
 class BM25:
@@ -144,6 +150,10 @@ def _cosine(a: list[float], b: list[float]) -> float:
 def retrieve(question: str, chunks: list[Chunk], s: Settings) -> list[Chunk]:
     if not chunks:
         return []
+    # A card or a bill fits in the prompt whole. Sending everything means retrieval can't miss the answer
+    # because the question used different words ("expire" vs "Expires"); only long documents need ranking.
+    if len({i for c in chunks for i in c.line_ids}) <= s.full_context_lines:
+        return chunks
     if s.retriever == "ollama":
         try:
             import ollama

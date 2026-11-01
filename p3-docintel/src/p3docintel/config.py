@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     embed_model: str = "bge-m3"
     chunk_lines: int = 5
     top_chunks: int = 6
+    full_context_lines: int = 80  # documents this short skip retrieval: the model sees every line
 
     def resolved_ocr_mkldnn(self) -> bool:
         return self.ocr_mkldnn if self.ocr_mkldnn is not None else sys.platform != "win32"

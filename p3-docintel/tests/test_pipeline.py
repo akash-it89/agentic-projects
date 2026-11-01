@@ -89,9 +89,11 @@ def test_evaluate_on_samples_with_fakes(samples, tmp_path):
     shutil.copytree(samples / "docs", sub / "docs")
     shutil.copy(samples / "gold" / "utility_bill.json", sub / "gold")
     report = evaluate(sub, llm=bill_llm())
-    s = report["summary"]
-    assert s["field_recall"] == 1.0 and s["classification_accuracy"] == 1.0 and s["chat_accuracy"] == 1.0
-    assert s["box_accuracy_iou50"] is not None
+    gt, neg = report["summary"]["ground_truth"], report["summary"]["negative"]
+    assert gt["field_recall"] == 1.0 and gt["classification_accuracy"] == 1.0 and gt["answerable_questions"] == 1.0
+    assert gt["box_accuracy_iou50"] is not None
+    assert neg["refusals"] == 1.0 and neg["false_premise_not_confirmed"] == 1.0
+    assert neg["fields_dropped_citing_missing_lines"] >= 1  # the fake always invents one; the guard drops it
 
 
 def test_api_upload_process_and_chat(samples, monkeypatch):

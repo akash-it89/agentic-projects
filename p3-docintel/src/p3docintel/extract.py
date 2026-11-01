@@ -9,6 +9,7 @@ hallucination) is dropped. We also check that the value actually appears in the 
 import logging
 import re
 
+from .citations import UNTRUSTED_TEXT_RULE, parse_ids
 from .langdetect import NAMES
 from .llm import LLM, parse_json
 from .schema import ExtractedField, Line, union
@@ -27,7 +28,8 @@ Rules:
 - Copy "value" exactly as written in the document. Don't reformat dates or numbers.
 - "line_ids" must be the IDs of the lines the value comes from. Use only IDs shown below.
 - Use "attributes" for useful facts about the value, e.g. {{"currency": "USD"}} or {{"format": "DD/MM/YYYY"}}.
-- Skip headings and boilerplate that carry no information."""
+- Skip headings and boilerplate that carry no information.
+- {UNTRUSTED_TEXT_RULE}"""
 
 
 def number_lines(lines: list[Line]) -> str:
@@ -38,15 +40,22 @@ def _norm(text: str) -> str:
     return re.sub(r"[\W_]+", "", text.casefold())
 
 
-def build_fields(raw_fields: list[dict], lines_by_id: dict[str, Line]) -> list[ExtractedField]:
+def build_fields(raw_fields: list[dict], lines_by_id: dict[str, Line],
+                 stats: dict | None = None) -> list[ExtractedField]:
+    """stats (optional) counts what the guards caught: fields dropped for citing lines that don't exist,
+    and kept fields whose value isn't in the lines they cite. The evaluation reports both."""
+    stats = stats if stats is not None else {}
+    for key in ("dropped_unknown_lines", "value_not_in_lines", "kept"):
+        stats.setdefault(key, 0)
     out: list[ExtractedField] = []
     seen: set[tuple[str, str]] = set()
     for raw in raw_fields:
         if not isinstance(raw, dict) or not str(raw.get("value", "")).strip():
             continue
-        ids = [i for i in raw.get("line_ids") or [] if i in lines_by_id]
+        ids = parse_ids(raw.get("line_ids"), lines_by_id)
         if not ids:
             log.debug("Dropping field %r: cites no known line", raw.get("name"))
+            stats["dropped_unknown_lines"] += 1
             continue
         name = re.sub(r"\W+", "_", str(raw.get("name") or "field").strip().lower()).strip("_") or "field"
         value = str(raw["value"]).strip()
@@ -61,6 +70,8 @@ def build_fields(raw_fields: list[dict], lines_by_id: dict[str, Line]) -> list[E
         attributes = dict(raw.get("attributes") or {})
         if not found:
             attributes["value_found_in_lines"] = False
+            stats["value_not_in_lines"] += 1
+        stats["kept"] += 1
         ocr_conf = min(lines_by_id[i].confidence for i in ids)
         ftype = raw.get("type") if raw.get("type") in FIELD_TYPES else "text"
         out.append(ExtractedField(name=name, value=value, type=ftype, line_ids=ids, attributes=attributes,
@@ -69,7 +80,8 @@ def build_fields(raw_fields: list[dict], lines_by_id: dict[str, Line]) -> list[E
     return out
 
 
-def extract_fields(lines: list[Line], llm: LLM, language: str, max_lines: int = 120) -> list[ExtractedField]:
+def extract_fields(lines: list[Line], llm: LLM, language: str, max_lines: int = 120,
+                   stats: dict | None = None) -> list[ExtractedField]:
     """Sends the document in slices of max_lines so long documents fit the model's context."""
     by_id = {ln.id: ln for ln in lines}
     raw: list[dict] = []
@@ -81,4 +93,4 @@ def extract_fields(lines: list[Line], llm: LLM, language: str, max_lines: int = 
         except ValueError as e:
             log.warning("Extraction call returned unusable JSON (%s); skipping lines %d-%d",
                         e, start + 1, start + len(chunk))
-    return build_fields(raw, by_id)
+    return build_fields(raw, by_id, stats)
